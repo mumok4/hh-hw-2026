@@ -45,3 +45,71 @@ def test_register_call_counts_calls_between_local_and_foreign_users() -> None:
 
     assert switchboard.get_active_calls_count() == 3
     assert switchboard.get_cross_border_calls_count() == 1
+
+
+def test_register_call_creates_two_local_users() -> None:
+    switchboard = Switchboard()
+
+    active_call = switchboard.register_call(
+        "1,Ivan Ivanov,+79990000000,2,Petr Petrov,+78880000000"
+    )
+
+    assert isinstance(active_call.caller, LocalUser)
+    assert isinstance(active_call.receiver, LocalUser)
+    assert not active_call.is_cross_border
+
+
+def test_register_call_creates_two_foreign_users() -> None:
+    switchboard = Switchboard()
+
+    active_call = switchboard.register_call(
+        "1,John Smith,+15551234567,2,Jane Doe,+33123456789"
+    )
+
+    assert isinstance(active_call.caller, ForeignUser)
+    assert isinstance(active_call.receiver, ForeignUser)
+    assert not active_call.is_cross_border
+
+
+def test_active_calls_count_starts_at_zero() -> None:
+    switchboard = Switchboard()
+
+    assert switchboard.get_active_calls_count() == 0
+
+
+def test_cross_border_calls_count_starts_at_zero() -> None:
+    switchboard = Switchboard()
+
+    assert switchboard.get_cross_border_calls_count() == 0
+
+
+def test_cross_border_calls_from_both_sides_count() -> None:
+    switchboard = Switchboard()
+
+    switchboard.register_call(
+        "1,Ivan Ivanov,+79990000000,2,John Smith,+15551234567"
+    )
+    switchboard.register_call(
+        "3,Petr Petrov,+78880000000,4,Maria Petrova,+79991112233"
+    )
+    switchboard.register_call(
+        "5,John Dough,+15551234567,6,Ivan Smirnov,+79990000000"
+    )
+
+    assert switchboard.get_cross_border_calls_count() == 2
+
+
+def test_active_calls_count() -> None:
+    switchboard = Switchboard()
+
+    switchboard.register_call(
+        "1,Ivan Ivanov,+79990000000,2,John Smith,+15551234567"
+    )
+    switchboard.register_call(
+        "3,Petr Petrov,+78880000000,4,Maria Petrova,+79991112233"
+    )
+    switchboard.register_call(
+        "5,Jane Doe,+33123456789,6,Alex Doe,+442012345678"
+    )
+
+    assert switchboard.get_active_calls_count() == 3
