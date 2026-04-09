@@ -4,6 +4,7 @@ from app.switchboard import Switchboard
 from app.users import ForeignUser, LocalUser
 
 
+# Happy Route(no errors)
 def test_register_call_creates_local_and_foreign_users() -> None:
     switchboard = Switchboard()
 
@@ -71,15 +72,10 @@ def test_register_call_creates_two_foreign_users() -> None:
     assert not active_call.is_cross_border
 
 
-def test_active_calls_count_starts_at_zero() -> None:
+def test_calls_count_starts_at_zero() -> None:
     switchboard = Switchboard()
 
     assert switchboard.get_active_calls_count() == 0
-
-
-def test_cross_border_calls_count_starts_at_zero() -> None:
-    switchboard = Switchboard()
-
     assert switchboard.get_cross_border_calls_count() == 0
 
 
@@ -113,3 +109,60 @@ def test_active_calls_count() -> None:
     )
 
     assert switchboard.get_active_calls_count() == 3
+
+
+# Sad route( Errors :`( )
+def test_register_raises_on_too_few_fields() -> None:
+    switchboard = Switchboard()
+
+    with pytest.raises(ValueError):
+        switchboard.register_call("1,Ivan Ivanov,+79990000000")
+
+
+def test_register_raises_on_empty_string() -> None:
+    switchboard = Switchboard()
+
+    with pytest.raises(ValueError):
+        switchboard.register_call("")
+
+
+def test_register_raises_on_non_integer_id() -> None:
+    switchboard = Switchboard()
+
+    with pytest.raises(ValueError):
+        switchboard.register_call("abc,Ivan Ivanov,+79990000000,2,Petr Petrov,+78880000000")
+
+
+def test_register_raises_on_empty_fullname() -> None:
+    switchboard = Switchboard()
+
+    with pytest.raises(ValueError):
+        switchboard.register_call("1,,+79990000000,2,Petr Petrov,+78880000000")
+
+
+def test_register_raises_on_blank_fullname() -> None:
+    switchboard = Switchboard()
+
+    with pytest.raises(ValueError):
+        switchboard.register_call("1,   ,+79990000000,2,Petr Petrov,+78880000000")
+
+
+def test_register_raises_on_numeric_fullname() -> None:
+    switchboard = Switchboard()
+
+    with pytest.raises(ValueError):
+        switchboard.register_call("1,12345,+79990000000,2,Petr Petrov,+78880000000")
+
+
+def test_register_raises_on_invalid_phone() -> None:
+    switchboard = Switchboard()
+
+    with pytest.raises(ValueError):
+        switchboard.register_call("1,Ivan Ivanov,79990000000,2,Petr Petrov,+78880000000")
+
+
+def test_register_raises_on_phone_prefix_only() -> None:
+    switchboard = Switchboard()
+
+    with pytest.raises(ValueError):
+        switchboard.register_call("1,Ivan Ivanov,+,2,Petr Petrov,+78880000000")
